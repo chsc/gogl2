@@ -1,0 +1,71 @@
+GoGL2
+=====
+
+GoGL2 is an OpenGL binding generator for Go.
+It's the sucessor project of GoGL.
+
+Install the OpenGL bindings
+---------------------------
+
+For example, OpenGL 2.1 bindings can be installed using the go command:
+
+	go get github.com/chsc/gogl2/gl31
+
+Documentation
+-------------
+
+Khronos documentation:
+
+* [OpenGL 3.X](http://www.opengl.org/sdk/docs/man3)
+* [OpenGL 4.X](http://www.opengl.org/sdk/docs/man4)
+
+Package documentation:
+
+* [OpenGL 3.3](http://gopkgdoc.appspot.com/pkg/github.com/chsc/gogl/gl33)
+* [OpenGL 4.2](http://gopkgdoc.appspot.com/pkg/github.com/chsc/gogl/gl42)
+* [OpenGL 4.3](http://gopkgdoc.appspot.com/pkg/github.com/chsc/gogl/gl43)
+
+* [AMD](http://gopkgdoc.appspot.com/pkg/github.com/chsc/gogl/amd),
+  [ATI](http://gopkgdoc.appspot.com/pkg/github.com/chsc/gogl/ati),
+  [ARB](http://gopkgdoc.appspot.com/pkg/github.com/chsc/gogl/arb),
+  [EXT](http://gopkgdoc.appspot.com/pkg/github.com/chsc/gogl/ext),
+  [NV](http://gopkgdoc.appspot.com/pkg/github.com/chsc/gogl/nv)
+
+GoGL specific docs and usage examples:
+
+* [Wiki](https://github.com/chsc/gogl/wiki)
+
+Examples
+--------
+
+To test the installed bindings, build and install the "spinning gopher" example:
+
+	go get github.com/chsc/gogl/examples/gopher
+
+and run it from your command line.
+
+Manually build & install the binding generator
+----------------------------------------------
+
+If you want to create your own bindings:
+
+clone the repository:
+
+	git clone http://github.com/chsc/gogl.git
+
+or use the go command:
+
+	go get github.com/chsc/gogl
+
+To generate the bindings (the fast way), simply type:
+
+	make bindings
+
+This will download, build and install the latest OpenGL bindings.
+
+Use 
+
+	gogl -help
+
+for more information about GoGL's command line arguments.
+
