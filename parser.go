@@ -352,7 +352,7 @@ func ParseSpecFile(file string) (Packages, error) {
 	}
 	
 	for _, ft := range reg.Features {
-		if ft.Api != "gl" || ft.Number != "1.1" { // TODO: only for testing
+		if ft.Api != "gl" || ft.Number != "2.1" { // TODO: only for testing
 			continue
 		}
 
@@ -379,7 +379,7 @@ func ParseSpecFile(file string) (Packages, error) {
 	}
 
 	for _, f := range reg.Features {
-		if f.Api != "gl" || f.Number != "1.1" { // TODO: only for testing
+		if f.Api != "gl" || f.Number != "2.1" { // TODO: only for testing
 			continue
 		}
 

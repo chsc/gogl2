@@ -15,6 +15,9 @@ import (
 const (
 	khronosRegistryBaseURL = "https://cvs.khronos.org/svn/repos/ogl/trunk/doc/registry/public/api"
 	openGLSpecFile         = "gl.xml"
+	eglSpecFile            = "egl.xml"
+	wglSpecFile            = "wgl.xml"
+	glxSpecFile            = "glx.xml"
 )
 
 func makeURL(base, file string) string {
@@ -48,6 +51,22 @@ func downloadFile(baseURL, fileName, outDir string) error {
 	return nil
 }
 
-func downloadOpenGLSpecs(baseURL, outDir string) {
-	downloadFile(baseURL, openGLSpecFile, outDir)
+func downloadOpenGLSpecs(baseURL, outDir string) error {
+	err := downloadFile(baseURL, openGLSpecFile, outDir)
+	if err != nil {
+		return err
+	}
+	err = downloadFile(baseURL, wglSpecFile, outDir)
+	if err != nil {
+		return err
+	}
+	err = downloadFile(baseURL, glxSpecFile, outDir)
+	if err != nil {
+		return err
+	}
+	err = downloadFile(baseURL, eglSpecFile, outDir)
+	if err != nil {
+		return err
+	}
+	return nil
 }
