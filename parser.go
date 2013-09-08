@@ -158,6 +158,7 @@ func (si SpecSignature) Parse() (string, Type, error) {
 	ctype := Type{}
 	readName := false
 	readType := false
+	first := true
 	decoder := xml.NewDecoder(bytes.NewBuffer(si))
 	for {
 		token, err := decoder.Token()
@@ -194,6 +195,9 @@ func (si SpecSignature) Parse() (string, Type, error) {
 				ctype.PointerLevel = 2
 			} else if s == "const" {
 				ctype.IsConst = true
+			} else if first {
+				ctype.Name = s
+				first = false
 			} else {
 				return name, ctype, fmt.Errorf("Unknown %s", s)
 			}
@@ -325,7 +329,7 @@ func removeCommands(ps Packages, ver Version, cmdNames []SpecCommandRef) {
 		if pc.Version.Compare(ver) < 0 {
 			continue
 		}
-		fmt.Println("removing cmds from package", pc.Name, ver)
+		//fmt.Println("removing cmds from package", pc.Name, ver)
 		for _, cn := range cmdNames {
 			fname := strings.TrimPrefix(cn.Name, "gl")
 			if _, ok := pc.Functions[fname]; !ok {
@@ -336,6 +340,9 @@ func removeCommands(ps Packages, ver Version, cmdNames []SpecCommandRef) {
 		}
 	}
 }
+
+
+
 
 func ParseSpecFile(file string) (Packages, error) {
 	pacs := make(Packages, 0)
@@ -352,15 +359,11 @@ func ParseSpecFile(file string) (Packages, error) {
 	}
 	
 	for _, ft := range reg.Features {
-		if ft.Api != "gl" || ft.Number != "2.1" { // TODO: only for testing
-			continue
-		}
-
+		fmt.Println("---", ft.Api, ft.Name, ft.Number)
 		version, err := ParseVersion(ft.Number)
-		if err != nil { // currently only for gl
+		if err != nil {
 			return nil, err
 		}
-
 		ptype := PackageTypeUnknown
 		pname := ""
 		switch ft.Api {
@@ -369,21 +372,26 @@ func ParseSpecFile(file string) (Packages, error) {
 			pname = "gl"
 		case "gles1", "gles2":
 			ptype = PackageTypeGLES
-			pname = "gles"
+			pname = "gl"
+		case "wgl":
+			ptype = PackageTypeWGL
+			pname = "wgl"
+		case "glx":
+			ptype = PackageTypeGLX
+			pname = "glx"
+		case "egl":
+			ptype = PackageTypeEGL
+			pname = "egl"
 		default:
 			return nil, fmt.Errorf("Unknown api: '%s'", ft.Api)
 		}
-
 		p := &Package{PackageType: ptype, Name: pname, Version: version, TypeDefs: tds, Enums: make(Enums), Functions: make(Functions)}
 		pacs = append(pacs, p)
 	}
 
 	for _, f := range reg.Features {
-		if f.Api != "gl" || f.Number != "2.1" { // TODO: only for testing
-			continue
-		}
-
-		fmt.Println("Feature:", f.Api, f.Name, f.Number)
+	
+		//fmt.Println("Feature:", f.Api, f.Name, f.Number)
 
 		version, err := ParseVersion(f.Number)
 		if err != nil {

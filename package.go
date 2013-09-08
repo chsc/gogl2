@@ -15,8 +15,11 @@ import (
 const (
 	PackageTypeUnknown PackageType = iota
 	PackageTypeGL
-	PackageTypeGLES
 	PackageTypeGLExt
+	PackageTypeGLES
+	PackageTypeWGL
+	PackageTypeGLX
+	PackageTypeEGL
 )
 
 type PackageType int
@@ -161,8 +164,24 @@ func (p *Package) writeCommands(dir string, useFuncPtrs bool) error {
 }
 
 func (p *Package) GeneratePackage() error {
-	dir := filepath.Join("gl", p.Version.String(), "gl") // TODO: only for gl at the moment
-	err := os.MkdirAll(dir, 0755)
+	dir := ""
+	switch p.PackageType {
+	case PackageTypeGL:
+		dir = filepath.Join("gl", p.Version.String(), p.Name)
+	case PackageTypeGLExt:
+		dir = filepath.Join("gl", p.Name)
+	case PackageTypeGLES:
+		dir = filepath.Join("gles", p.Version.String(), p.Name)
+	case PackageTypeGLX:
+		dir = filepath.Join("glx", p.Version.String(), p.Name)
+	case PackageTypeWGL:
+		dir = filepath.Join("wgl", p.Version.String(), p.Name)
+	case PackageTypeEGL:
+		dir = filepath.Join("egl", p.Version.String(), p.Name)
+	default:
+		return fmt.Errorf("Unknown package type %v", p.PackageType)
+	}
+		err := os.MkdirAll(dir, 0755)
 	if err != nil {
 		return err
 	}

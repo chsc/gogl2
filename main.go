@@ -14,9 +14,39 @@ import (
 func generateGoPackages(specsDir string) {
 	ps, err := ParseSpecFile(filepath.Join(specsDir, openGLSpecFile))
 	if err != nil {
-		fmt.Printf("Error: ", err)
+		fmt.Println("Error while parsing OpenGL specification:", err)
 	}
-	ps.GeneratePackages()
+	err = ps.GeneratePackages()
+	if err != nil {
+		fmt.Println("Error while generating OpenGL packages:", err)
+	}
+
+	ps, err = ParseSpecFile(filepath.Join(specsDir, wglSpecFile))
+	if err != nil {
+		fmt.Println("Error while parsing WGL specification:", err)
+	}
+	err = ps.GeneratePackages()
+	if err != nil {
+		fmt.Println("Error while generating WGL packages:", err)
+	}
+
+	ps, err = ParseSpecFile(filepath.Join(specsDir, glxSpecFile))
+	if err != nil {
+		fmt.Println("Error while parsing GLX specification:", err)
+	}
+	err = ps.GeneratePackages()
+	if err != nil {
+		fmt.Println("Error while generating GLX packages:", err)
+	}
+
+	ps, err = ParseSpecFile(filepath.Join(specsDir, eglSpecFile))
+	if err != nil {
+		fmt.Println("Error while parsing EGL specification:", err)
+	}
+	err = ps.GeneratePackages()
+	if err != nil {
+		fmt.Println("Error while generating EGL packages:", err)
+	}
 }
 
 func downloadSpec(name string, args []string) {
