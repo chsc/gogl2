@@ -5,10 +5,11 @@ GoGL2 is the successor of GoGL.
 
 *Currently under development...*
 
-Why a new Binding generator?
+Why a new binding generator?
 ----------------------------
 
-New spec file format (XML based), ...
+* Support version 4.4 and higher
+* New spec file format (XML based), ...
 
 Install the OpenGL bindings
 ---------------------------
