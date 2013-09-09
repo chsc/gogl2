@@ -55,25 +55,36 @@ func downloadSpec(name string, args []string) {
 	odir := fs.String("odir", "glspecs", "Output directory for spec files.")
 	fs.Parse(args)
 	fmt.Println("Downloading specs ...")
-	switch *src {
-	case "khronos":
-		downloadOpenGLSpecs(khronosRegistryBaseURL, *odir)
-	default:
-		downloadOpenGLSpecs(*src, *odir)
+	if *src == "khronos" {
+		*src = khronosRegistryBaseURL
+	}
+	err := downloadAllSpecs(*src, *odir)
+	if err != nil {
+		fmt.Println("Error while downloading docs:", err)
 	}
 }
 
 func downloadDoc(name string, args []string) {
-	fmt.Println("Download docs not implemented.")
 	fs := flag.NewFlagSet(name, flag.ExitOnError)
-	fs.String("src", "", "Source URL.")
-	fs.String("odir", "gldocs", "Output directory for doc files.")
+	src := fs.String("src", "khronos", "Source URL or 'khronos'.")
+	odir := fs.String("odir", "gldocs", "Output directory for doc files.")
+	ver := fs.Int("ver", -1, "Doc version: 2, 3, 4")
 	fs.Parse(args)
+	if *ver < 2 || *ver > 4 {
+		fmt.Println("Invalid doc version:", *ver)
+		return
+	}
 	fmt.Println("Downloading docs ...")
-	// TODO: download docs
+	if *src == "khronos" {
+		*src = khronosDocBaseURL
+	}
+	err := downloadDocs(*src, fmt.Sprintf("man%d", *ver), *odir)
+	if err != nil {
+		fmt.Println("Error while downloading docs:", err)
+	}
 }
 
-func generate(name string, args []string) {
+func generatePackages(name string, args []string) {
 	fs := flag.NewFlagSet(name, flag.ExitOnError)
 	sdir := fs.String("sdir", "glspecs", "OpenGL spec directory.")
 	_ = fs.String("ddir", "gldocs", "Documentation directory (currently not used).")
@@ -109,11 +120,11 @@ func main() {
 	case "pullspec":
 		downloadSpec("pullspec", args[1:])
 	case "pulldoc":
-		downloadDoc("dldoc", args[1:])
+		downloadDoc("pulldoc", args[1:])
 	case "generate":
-		generate("generate", args[1:])
+		generatePackages("generate", args[1:])
 	default:
-		fmt.Fprintf(os.Stderr, "Unknown command '%s'.", command)
+		fmt.Printf("Unknown command: '%s'\n", command)
 		printUsage(name)
 		os.Exit(-1)
 	}

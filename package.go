@@ -181,7 +181,7 @@ func (p *Package) GeneratePackage() error {
 	default:
 		return fmt.Errorf("Unknown package type %v", p.PackageType)
 	}
-		err := os.MkdirAll(dir, 0755)
+	err := os.MkdirAll(dir, 0755)
 	if err != nil {
 		return err
 	}

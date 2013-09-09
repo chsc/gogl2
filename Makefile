@@ -1,7 +1,10 @@
 bindings:
 	go build
-	./gogl pullspec
-	./gogl generate
+	./gogl2 pulldoc -ver=2
+	./gogl2 pulldoc -ver=3
+	./gogl2 pulldoc -ver=4
+	./gogl2 pullspec
+	./gogl2 generate
 	make install_bindings
 
 install_bindings:

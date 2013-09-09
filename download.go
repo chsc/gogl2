@@ -13,6 +13,13 @@ import (
 )
 
 const (
+	khronosDocBaseURL      = "https://cvs.khronos.org/svn/repos/ogl/trunk/ecosystem/public/sdk/docs"
+	khronosDocCat2         = "man2"
+	khronosDocCat3         = "man3"
+	khronosDocCat4         = "man4"
+)
+
+const (
 	khronosRegistryBaseURL = "https://cvs.khronos.org/svn/repos/ogl/trunk/doc/registry/public/api"
 	openGLSpecFile         = "gl.xml"
 	eglSpecFile            = "egl.xml"
@@ -20,12 +27,8 @@ const (
 	glxSpecFile            = "glx.xml"
 )
 
-func makeURL(base, file string) string {
-	return fmt.Sprintf("%s/%s", base, file)
-}
-
-func downloadFile(baseURL, fileName, outDir string) error {
-	fullURL := makeURL(baseURL, fileName)
+func downloadFile(baseURL, fileName, outDir, outFile string) error {
+	fullURL := fmt.Sprintf("%s/%s", baseURL, fileName)
 	fmt.Printf("Downloading %s ...\n", fullURL)
 	r, err := http.Get(fullURL)
 	if err != nil {
@@ -44,27 +47,27 @@ func downloadFile(baseURL, fileName, outDir string) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(filepath.Join(absPath, fileName), data, 0644)
+	err = ioutil.WriteFile(filepath.Join(absPath, outFile), data, 0644)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func downloadOpenGLSpecs(baseURL, outDir string) error {
-	err := downloadFile(baseURL, openGLSpecFile, outDir)
+func downloadAllSpecs(baseURL, outDir string) error {
+	err := downloadFile(baseURL, openGLSpecFile, outDir, openGLSpecFile)
 	if err != nil {
 		return err
 	}
-	err = downloadFile(baseURL, wglSpecFile, outDir)
+	err = downloadFile(baseURL, wglSpecFile, outDir, wglSpecFile)
 	if err != nil {
 		return err
 	}
-	err = downloadFile(baseURL, glxSpecFile, outDir)
+	err = downloadFile(baseURL, glxSpecFile, outDir, glxSpecFile)
 	if err != nil {
 		return err
 	}
-	err = downloadFile(baseURL, eglSpecFile, outDir)
+	err = downloadFile(baseURL, eglSpecFile, outDir, eglSpecFile)
 	if err != nil {
 		return err
 	}
