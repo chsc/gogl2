@@ -14,9 +14,7 @@ import (
 
 const (
 	khronosDocBaseURL      = "https://cvs.khronos.org/svn/repos/ogl/trunk/ecosystem/public/sdk/docs"
-	khronosDocCat2         = "man2"
-	khronosDocCat3         = "man3"
-	khronosDocCat4         = "man4"
+	khronosDocDir          = "man"
 )
 
 const (

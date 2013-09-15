@@ -86,7 +86,13 @@ func (f *Function) WriteCGetProcAddress(w io.Writer) {
 	fmt.Fprintf(w, "// 	if((pgl%s = goglGetProcAddress(\"gl%s\")) == NULL) return 1;\n", f.Name, f.Name)
 }
 
-func (f *Function) WriteGoDefinition(w io.Writer, usePtr bool) {
+func (f *Function) WriteGoDefinition(w io.Writer, usePtr bool, df []*DocFunc) {
+	doc, err := GetFuncDoc(f.Name, df)
+	if err != nil {
+		fmt.Printf("Unable to find function doc: %v\n", err)
+	} else {
+		fmt.Fprintln(w, "//", doc.Purpose)
+	}
 	fmt.Fprintf(w, "func %s(", f.Name)
 	for i, _ := range f.Parameters {
 		p := &f.Parameters[i]
@@ -167,9 +173,9 @@ func (sf SortedFunctions) WriteCInitProcAddresses(w io.Writer) {
 	fmt.Fprintln(w, "// }")
 }
 
-func (sf SortedFunctions) WriteGoDefinitions(w io.Writer, usePtr bool) {
+func (sf SortedFunctions) WriteGoDefinitions(w io.Writer, usePtr bool, df []*DocFunc) {
 	for _, f := range sf {
-		f.WriteGoDefinition(w, usePtr)
+		f.WriteGoDefinition(w, usePtr, df)
 	}
 	fmt.Fprintln(w, "// ")
 }

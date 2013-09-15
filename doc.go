@@ -35,8 +35,10 @@ type docFile struct {
 	FileName string
 }
 
-type docFunc struct {
-	Purpose string
+type DocFunc struct {
+	BaseName string
+	Purpose  string
+	// TODO: more?
 }
 
 func writeKhronosDocCopyright(w io.Writer) {
@@ -88,7 +90,6 @@ func readFileNonStrict(fileName string, data interface{}) error {
 func parseDocIndex(fileName string) ([]docFile, error) {
 	var di docSvnIndex
 	if err := readFileNonStrict(fileName, &di); err != nil {
-		fmt.Println("###", err)
 		return nil, err
 	}
 	files := make([]docFile, 0, 256)
@@ -107,15 +108,7 @@ func parseDocIndex(fileName string) ([]docFile, error) {
 	return files, nil
 }
 
-func parseDocFile(fileName string) (*docFunc, error) {
-	var d docRefEntry
-	if err := readFileNonStrict(fileName, &d); err != nil {
-		return nil, err
-	}
-	return &docFunc{Purpose: d.RefPurpose}, nil
-}
-
-func downloadDocs(url, docCat, outDir string) error {
+func DownloadDocs(url, docCat, outDir string) error {
 	complOutDir := filepath.Join(outDir, docCat)
 	err := downloadFile(url, docCat, complOutDir, "index.xml")
 	if err != nil {
@@ -134,11 +127,58 @@ func downloadDocs(url, docCat, outDir string) error {
 	return nil
 }
 
-func getFuncBaseName(name string, baseNames []docFile) string {
-	for _, bn := range baseNames {
-			if strings.HasPrefix(name, bn.BaseName) {
-				return bn.BaseName
+func parseDocFile(fileName string) (*DocFunc, error) {
+	var d docRefEntry
+	if err := readFileNonStrict(fileName, &d); err != nil {
+		return nil, err
+	}
+	return &DocFunc{Purpose: d.RefPurpose}, nil
+}
+
+func parseDocs(docCat, dir string) ([]*DocFunc, error) {
+	complOutDir := filepath.Join(dir, docCat)
+	files, err := parseDocIndex(filepath.Join(complOutDir, "index.xml"))
+	if err != nil {
+		return nil, err
+	}
+	docFuncs := make([]*DocFunc, 0, 256)
+	for _, file := range files {
+		df, err := parseDocFile(filepath.Join(complOutDir, file.FileName))
+		if err != nil {
+			return nil, err
+		}
+		df.BaseName = file.BaseName		
+		docFuncs = append(docFuncs, df)
+	}
+	return docFuncs, nil
+}
+
+func ParseAllDocs(dir string) ([]*DocFunc, error) {
+	df2, err := parseDocs("man2", dir)
+	if err != nil {
+		return nil, err
+	}
+	for _, ff := range df2 {
+		fmt.Println("DOC", ff)
+	}
+	//TODO: distinguish between versions
+/*	df3, err := parseDocs("man3", dir)
+	if err != nil {
+		return nil, err
+	}
+	df4, err := parseDocs("man4", dir)
+	if err != nil {
+		return nil, err
+	}*/	
+	return df2, err
+}
+
+func GetFuncDoc(name string, funcDocs []*DocFunc) (*DocFunc, error) {
+//	fmt.Println("DOC", name)
+	for _, fd := range funcDocs {
+			if strings.HasPrefix(name, fd.BaseName) {
+				return fd, nil
 			}
 	}
-	return name
+	return nil, fmt.Errorf("unable to find doc for function %s", name)
 }

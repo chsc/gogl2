@@ -11,12 +11,12 @@ import (
 	"path/filepath"
 )
 
-func generateGoPackages(specsDir string) {
+func generateGoPackages(specsDir string, df []*DocFunc) {
 	ps, err := ParseSpecFile(filepath.Join(specsDir, openGLSpecFile))
 	if err != nil {
 		fmt.Println("Error while parsing OpenGL specification:", err)
 	}
-	err = ps.GeneratePackages()
+	err = ps.GeneratePackages(df)
 	if err != nil {
 		fmt.Println("Error while generating OpenGL packages:", err)
 	}
@@ -25,7 +25,7 @@ func generateGoPackages(specsDir string) {
 	if err != nil {
 		fmt.Println("Error while parsing WGL specification:", err)
 	}
-	err = ps.GeneratePackages()
+	err = ps.GeneratePackages(df)
 	if err != nil {
 		fmt.Println("Error while generating WGL packages:", err)
 	}
@@ -34,7 +34,7 @@ func generateGoPackages(specsDir string) {
 	if err != nil {
 		fmt.Println("Error while parsing GLX specification:", err)
 	}
-	err = ps.GeneratePackages()
+	err = ps.GeneratePackages(df)
 	if err != nil {
 		fmt.Println("Error while generating GLX packages:", err)
 	}
@@ -43,7 +43,7 @@ func generateGoPackages(specsDir string) {
 	if err != nil {
 		fmt.Println("Error while parsing EGL specification:", err)
 	}
-	err = ps.GeneratePackages()
+	err = ps.GeneratePackages(df)
 	if err != nil {
 		fmt.Println("Error while generating EGL packages:", err)
 	}
@@ -78,7 +78,7 @@ func downloadDoc(name string, args []string) {
 	if *src == "khronos" {
 		*src = khronosDocBaseURL
 	}
-	err := downloadDocs(*src, fmt.Sprintf("man%d", *ver), *odir)
+	err := DownloadDocs(*src, fmt.Sprintf("man%d", *ver), *odir)
 	if err != nil {
 		fmt.Println("Error while downloading docs:", err)
 	}
@@ -87,10 +87,15 @@ func downloadDoc(name string, args []string) {
 func generatePackages(name string, args []string) {
 	fs := flag.NewFlagSet(name, flag.ExitOnError)
 	sdir := fs.String("sdir", "glspecs", "OpenGL spec directory.")
-	_ = fs.String("ddir", "gldocs", "Documentation directory (currently not used).")
+	ddir := fs.String("ddir", "gldocs", "Documentation directory (currently not used).")
 	fs.Parse(args)
 	fmt.Println("Generate Bindings ...")
-	generateGoPackages(*sdir)
+	df, err := ParseAllDocs(*ddir)
+	if err != nil {
+		fmt.Println("Error while parsing docs:", err)
+		return
+	}
+	generateGoPackages(*sdir, df)
 }
 
 func printUsage(name string) {
