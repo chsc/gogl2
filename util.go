@@ -8,18 +8,67 @@ import (
 	"fmt"
 	"strings"
 	"unicode"
+	"strconv"
 )
 
+type ParamLenType int
+
+const (
+	ParamLenTypeUnknown ParamLenType = iota
+	ParamLenTypeParamRef
+	ParamLenTypeValue
+	ParamLenTypeCompSize
+)
+
+type ParamLen struct {
+	Type     ParamLenType
+	ParamRef string
+	Value    int
+	Params   string
+}
+
 func TrimGLCmdPrefix(str string) string {
-	return strings.TrimPrefix(str, "gl")
+	if strings.HasPrefix(str, "gl") {
+		return strings.TrimPrefix(str, "gl")
+	}
+	if strings.HasPrefix(str, "glx") {
+		return strings.TrimPrefix(str, "glx")
+	}
+	if strings.HasPrefix(str, "wgl") {
+		return strings.TrimPrefix(str, "wgl")
+	}
+	return str
 }
 
 func TrimGLEnumPrefix(str string) string {
-	t := strings.TrimPrefix(str, "GL_")
+	t := str;
+	p := ""
+	if strings.HasPrefix(str, "GL_") {
+		t = strings.TrimPrefix(t, "GL_")
+		p = "GL_"
+	} else if strings.HasPrefix(str, "GLX_") {
+		t = strings.TrimPrefix(str, "GLX_")
+		p = "GLX_"
+	} else if strings.HasPrefix(str, "WGL_") {
+		t = strings.TrimPrefix(str, "WGL_")
+		p = "WGL_"
+	}
 	if strings.IndexAny(t, "0123456789") == 0 {
-		return fmt.Sprintf("GL_%s", t) // keep it if we have a number
+		return p + t
 	}
 	return t
+}
+
+func ParseLenString(lenStr string) ParamLen {
+	if strings.HasPrefix(lenStr, "COMPSIZE") {
+		p := strings.TrimSuffix(strings.TrimPrefix(lenStr, "COMPSIZE("), ")")
+		return ParamLen{Type: ParamLenTypeCompSize, Params: p}
+	}
+	n, err := strconv.ParseInt(lenStr, 10, 32)
+	if err == nil {
+		return ParamLen{Type: ParamLenTypeValue, Value: (int)(n)}
+	}
+	return ParamLen{Type: ParamLenTypeParamRef, ParamRef: lenStr}
 }
 
 // Prevent name clashes.

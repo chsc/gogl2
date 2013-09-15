@@ -59,7 +59,7 @@ func writeFuncDocUrl(w io.Writer, majorVersion int, fName string) {
 	if majorVersion >= 3 {
 		manVer = strconv.Itoa(majorVersion)
 	}
-	fmt.Fprintf(w, "http://www.opengl.org/sdk/docs/man%s/xhtml/gl%s.xml", manVer, fName)
+	fmt.Fprintf(w, "https://www.opengl.org/sdk/docs/man%s/xhtml/gl%s.xml", manVer, fName)
 }
 
 func makeExtensionSpecDocUrl(vendor, extension string) string {
@@ -67,21 +67,12 @@ func makeExtensionSpecDocUrl(vendor, extension string) string {
 }
 
 func makeGLDocUrl(majorVersion int) string {
-	manVer := ""
+	manVer := "2"
 	if majorVersion >= 3 {
 		manVer = strconv.Itoa(majorVersion)
 	}
 	return fmt.Sprintf("https://www.opengl.org/sdk/docs/man%s", manVer)
 }
-
-func makeFuncDocUrl(majorVersion int, fName string) string {
-	manVer := "2"
-	if majorVersion >= 3 {
-		manVer = strconv.Itoa(majorVersion)
-	}
-	return fmt.Sprintf("https://www.opengl.org/sdk/docs/man%s/xhtml/gl%s.xml", manVer, fName)
-}
-
 
 func readFileNonStrict(fileName string, data interface{}) error {
 	reader, err := os.Open(fileName)
