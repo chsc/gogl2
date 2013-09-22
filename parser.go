@@ -115,7 +115,7 @@ func (st *SpecType) Parse() (TypeDef, error) {
 		}
 		switch t := token.(type) {
 		case xml.CharData:
-		//	fmt.Println("- ", (string)(t))
+			//	fmt.Println("- ", (string)(t))
 			typed.CDefinition += (string)(t)
 			if readName {
 				typed.Name = (string)(t)
@@ -341,9 +341,6 @@ func removeCommands(ps Packages, ver Version, cmdNames []SpecCommandRef) {
 	}
 }
 
-
-
-
 func ParseSpecFile(file string) (Packages, error) {
 	pacs := make(Packages, 0)
 
@@ -355,9 +352,9 @@ func ParseSpecFile(file string) (Packages, error) {
 	functions := commandsToFunctions(reg.Commands)
 	tds, err := reg.ParseTypedefs()
 	if err != nil {
-			return nil, err
+		return nil, err
 	}
-	
+
 	for _, ft := range reg.Features {
 		fmt.Println("---", ft.Api, ft.Name, ft.Number)
 		version, err := ParseVersion(ft.Number)
@@ -390,7 +387,7 @@ func ParseSpecFile(file string) (Packages, error) {
 	}
 
 	for _, f := range reg.Features {
-	
+
 		//fmt.Println("Feature:", f.Api, f.Name, f.Number)
 
 		version, err := ParseVersion(f.Number)

@@ -11,12 +11,12 @@ import (
 	"path/filepath"
 )
 
-func generateGoPackages(specsDir string, df []*DocFunc) {
+func generateGoPackages(specsDir string, d *Documentation) {
 	ps, err := ParseSpecFile(filepath.Join(specsDir, openGLSpecFile))
 	if err != nil {
 		fmt.Println("Error while parsing OpenGL specification:", err)
 	}
-	err = ps.GeneratePackages(df)
+	err = ps.GeneratePackages(d)
 	if err != nil {
 		fmt.Println("Error while generating OpenGL packages:", err)
 	}
@@ -25,7 +25,7 @@ func generateGoPackages(specsDir string, df []*DocFunc) {
 	if err != nil {
 		fmt.Println("Error while parsing WGL specification:", err)
 	}
-	err = ps.GeneratePackages(df)
+	err = ps.GeneratePackages(d)
 	if err != nil {
 		fmt.Println("Error while generating WGL packages:", err)
 	}
@@ -34,7 +34,7 @@ func generateGoPackages(specsDir string, df []*DocFunc) {
 	if err != nil {
 		fmt.Println("Error while parsing GLX specification:", err)
 	}
-	err = ps.GeneratePackages(df)
+	err = ps.GeneratePackages(d)
 	if err != nil {
 		fmt.Println("Error while generating GLX packages:", err)
 	}
@@ -43,7 +43,7 @@ func generateGoPackages(specsDir string, df []*DocFunc) {
 	if err != nil {
 		fmt.Println("Error while parsing EGL specification:", err)
 	}
-	err = ps.GeneratePackages(df)
+	err = ps.GeneratePackages(d)
 	if err != nil {
 		fmt.Println("Error while generating EGL packages:", err)
 	}
@@ -134,4 +134,3 @@ func main() {
 		os.Exit(-1)
 	}
 }
-

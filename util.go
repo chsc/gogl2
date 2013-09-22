@@ -6,9 +6,9 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"unicode"
-	"strconv"
 )
 
 type ParamLenType int
@@ -41,7 +41,7 @@ func TrimGLCmdPrefix(str string) string {
 }
 
 func TrimGLEnumPrefix(str string) string {
-	t := str;
+	t := str
 	p := ""
 	if strings.HasPrefix(str, "GL_") {
 		t = strings.TrimPrefix(t, "GL_")

@@ -129,7 +129,7 @@ func (p *Package) writeEnums(dir string) error {
 	return nil
 }
 
-func (p *Package) writeCommands(dir string, useFuncPtrs bool, df []*DocFunc) error {
+func (p *Package) writeCommands(dir string, useFuncPtrs bool, d *Documentation) error {
 	w, err := os.Create(filepath.Join(dir, "commands.go"))
 	if err != nil {
 		return err
@@ -156,14 +156,14 @@ func (p *Package) writeCommands(dir string, useFuncPtrs bool, df []*DocFunc) err
 	fmt.Fprintln(w, "import \"C\"")
 	fmt.Fprintln(w, "import \"errors\"")
 	fmt.Fprintln(w, "")
-	sf.WriteGoDefinitions(w, useFuncPtrs, df)
+	sf.WriteGoDefinitions(w, useFuncPtrs, d, p.Version.Major)
 	sf.WriteGoInitPackage(w)
 	p.writeFooter(w)
 
 	return nil
 }
 
-func (p *Package) GeneratePackage(df []*DocFunc) error {
+func (p *Package) GeneratePackage(d *Documentation) error {
 	dir := ""
 	switch p.PackageType {
 	case PackageTypeGL:
@@ -189,14 +189,14 @@ func (p *Package) GeneratePackage(df []*DocFunc) error {
 	if err != nil {
 		return err
 	}
-	err = p.writeCommands(dir, true, df)
+	err = p.writeCommands(dir, true, d)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (ps Packages) GeneratePackages(df []*DocFunc) error {
+func (ps Packages) GeneratePackages(df *Documentation) error {
 	for _, p := range ps {
 		err := p.GeneratePackage(df)
 		if err != nil {

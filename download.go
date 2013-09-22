@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	khronosDocBaseURL      = "https://cvs.khronos.org/svn/repos/ogl/trunk/ecosystem/public/sdk/docs"
-	khronosDocDir          = "man"
+	khronosDocBaseURL = "https://cvs.khronos.org/svn/repos/ogl/trunk/ecosystem/public/sdk/docs"
+	khronosDocDir     = "man"
 )
 
 const (
