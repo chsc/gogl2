@@ -89,7 +89,7 @@ func (f *Function) WriteCGetProcAddress(w io.Writer) {
 func (f *Function) WriteGoDefinition(w io.Writer, usePtr bool, d *Documentation, majorVersion int) {
 	err := d.WriteGoCmdDoc(w, f.Name, majorVersion)
 	if err != nil {
-		fmt.Printf("Unable to find function doc: %v\n", err)
+		//fmt.Printf("Unable to find function doc: %v\n", err)
 	}
 	fmt.Fprintf(w, "func %s(", f.Name)
 	for i, _ := range f.Parameters {

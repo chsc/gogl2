@@ -164,6 +164,7 @@ func (p *Package) writeCommands(dir string, useFuncPtrs bool, d *Documentation) 
 }
 
 func (p *Package) GeneratePackage(d *Documentation) error {
+	fmt.Println("Generating package", p.Name, p.Version)
 	dir := ""
 	switch p.PackageType {
 	case PackageTypeGL:

@@ -99,21 +99,27 @@ func (cd CommandDocs) Less(i, j int) bool {
 }
 
 func (d *Documentation) findCmd(majorVersion int, cmdName string) (*CommandDoc, error) {
+	if majorVersion == 1 {
+		majorVersion = 2
+	}
 	for _, cd := range d.CommandDocs {
 		if cd.MajorVersion == majorVersion {
 			index := sort.Search(len(cd.Commands), func(i int) bool {
 				return cd.Commands[i].BaseName >= cmdName
 			})
 			if index == len(cd.Commands) {
-				return nil, fmt.Errorf("Command doc not found: %s", cmdName)
+				return nil, fmt.Errorf("Command doc not found: %s, version %d", cmdName, majorVersion)
 			}
-			// find the first function with matching prefix (longest prefix first)
-			for i := index; i >= 0; i-- {
-				if strings.HasPrefix(cmdName, cd.Commands[i].BaseName) {
-					return cd.Commands[i], nil
-				}
+			if strings.HasPrefix(cmdName, cd.Commands[index].BaseName) {
+				return cd.Commands[index], nil
 			}
-			return nil, fmt.Errorf("Command doc not found %s", cmdName)
+			if index == 0 {
+				return nil, fmt.Errorf("Command doc not found: %s, version %d", cmdName, majorVersion)
+			}
+			if strings.HasPrefix(cmdName, cd.Commands[index-1].BaseName) {
+				return cd.Commands[index-1], nil
+			}
+			return nil, fmt.Errorf("Command doc not found: %s, version %d", cmdName, majorVersion)
 		}
 	}
 	return nil, fmt.Errorf("Version not found %d", majorVersion)
