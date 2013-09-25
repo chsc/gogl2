@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strings"
 )
 
 type Parameter struct {
@@ -53,6 +54,13 @@ func (f *Function) WriteCFunctionPtr(w io.Writer) {
 	fmt.Fprintln(w, ");")
 }
 
+func (f *Function) WriteCFunctionPtrTypedef(w io.Writer) {
+	ctype := f.Return.CType()
+	fmt.Fprintf(w, "// typedef %s (APIENTRYP GL%s)(", ctype, strings.ToUpper(f.Name))
+	f.writeCParameters(w)
+	fmt.Fprintln(w, ");")
+}
+
 func (f *Function) WriteCDeclaration(w io.Writer) {
 	ctype := f.Return.CType()
 	fmt.Fprintf(w, "// GLAPI %s APIENTRY gl%s(", ctype, f.Name)
@@ -82,8 +90,34 @@ func (f *Function) WriteCBridgeDefinition(w io.Writer) {
 	fmt.Fprintln(w, "// }")
 }
 
+func (f *Function) WriteCBridgeDefinition2(w io.Writer) {
+	ctype := f.Return.CType()
+	fmt.Fprintf(w, "// %s gogl%s(glfptr GL%s, ", ctype, f.Name, strings.ToUpper(f.Name))
+	f.writeCParameters(w)
+	fmt.Fprintln(w, ") {")
+	if f.Return.IsVoid() {
+		fmt.Fprintf(w, "// 	")
+	} else {
+		fmt.Fprintf(w, "// 	return ")
+	}
+	fmt.Fprintf(w, "(*glfptr)(")
+	for i, _ := range f.Parameters {
+		p := &f.Parameters[i]
+		if i != 0 {
+			fmt.Fprintf(w, ", ")
+		}
+		fmt.Fprintf(w, "%s", RenameIfReservedCWord(p.Name))
+	}
+	fmt.Fprintln(w, ");")
+	fmt.Fprintln(w, "// }")
+}
+
 func (f *Function) WriteCGetProcAddress(w io.Writer) {
 	fmt.Fprintf(w, "// 	if((pgl%s = goglGetProcAddress(\"gl%s\")) == NULL) return 1;\n", f.Name, f.Name)
+}
+
+func (f *Function) WriteGoGetProcAddress(w io.Writer) {
+	fmt.Fprintf(w, "	if (pgl%s = getProcAddressFunc(\"gl%s\")) == nil return 1;\n", f.Name, f.Name, f.Name)
 }
 
 func (f *Function) WriteGoDefinition(w io.Writer, usePtr bool, d *Documentation, majorVersion int) {
@@ -148,6 +182,13 @@ func (sf SortedFunctions) WriteCFunctionPtrs(w io.Writer) {
 	fmt.Fprintln(w, "// ")
 }
 
+func (sf SortedFunctions) WriteCFunctionPtrTypedefs(w io.Writer) {
+	for _, f := range sf {
+		f.WriteCFunctionPtrTypedef(w)
+	}
+	fmt.Fprintln(w, "// ")
+}
+
 func (sf SortedFunctions) WriteCDeclarations(w io.Writer) {
 	for _, f := range sf {
 		f.WriteCDeclaration(w)
@@ -162,6 +203,13 @@ func (sf SortedFunctions) WriteCBridgeDefinitions(w io.Writer) {
 	fmt.Fprintln(w, "// ")
 }
 
+func (sf SortedFunctions) WriteCBridgeDefinitions2(w io.Writer) {
+	for _, f := range sf {
+		f.WriteCBridgeDefinition2(w)
+	}
+	fmt.Fprintln(w, "// ")
+}
+
 func (sf SortedFunctions) WriteCInitProcAddresses(w io.Writer) {
 	fmt.Fprintln(w, "// int goglInit() {")
 	for _, f := range sf {
@@ -171,11 +219,20 @@ func (sf SortedFunctions) WriteCInitProcAddresses(w io.Writer) {
 	fmt.Fprintln(w, "// }")
 }
 
+func (sf SortedFunctions) WriteGoInitProcAddresses(w io.Writer) {
+	fmt.Fprintln(w, "Init() int {")
+	for _, f := range sf {
+		f.WriteGoGetProcAddress(w)
+	}
+	fmt.Fprintln(w, "// \treturn 0;")
+	fmt.Fprintln(w, "// }")
+}
+
 func (sf SortedFunctions) WriteGoDefinitions(w io.Writer, usePtr bool, d *Documentation, majorVersion int) {
 	for _, f := range sf {
 		f.WriteGoDefinition(w, usePtr, d, majorVersion)
 	}
-	fmt.Fprintln(w, "// ")
+	fmt.Fprintln(w, "")
 }
 
 func (sf SortedFunctions) WriteGoInitPackage(w io.Writer) {
