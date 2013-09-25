@@ -166,6 +166,7 @@ func (p *Package) writeCommands(dir string, useFuncPtrs bool, d *Documentation) 
 func (p *Package) GeneratePackage(d *Documentation) error {
 	fmt.Println("Generating package", p.Name, p.Version)
 	dir := ""
+	usePtr := true
 	switch p.PackageType {
 	case PackageTypeGL:
 		dir = filepath.Join("gl", p.Version.String(), p.Name)
@@ -175,8 +176,10 @@ func (p *Package) GeneratePackage(d *Documentation) error {
 		dir = filepath.Join("gles", p.Version.String(), p.Name)
 	case PackageTypeGLX:
 		dir = filepath.Join("glx", p.Version.String(), p.Name)
+		usePtr = false
 	case PackageTypeWGL:
 		dir = filepath.Join("wgl", p.Version.String(), p.Name)
+		usePtr = false
 	case PackageTypeEGL:
 		dir = filepath.Join("egl", p.Version.String(), p.Name)
 	default:
@@ -190,7 +193,7 @@ func (p *Package) GeneratePackage(d *Documentation) error {
 	if err != nil {
 		return err
 	}
-	err = p.writeCommands(dir, true, d)
+	err = p.writeCommands(dir, usePtr, d)
 	if err != nil {
 		return err
 	}

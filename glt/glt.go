@@ -1,14 +1,17 @@
 // Copyright 2013 The GoGL2 Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE.mkd file.
-
 package glt
 
 import (
-	"refelct"
+	"reflect"
+	"fmt"
 )
 
 type Pointer uintptr
+type GetProcAddressFunc func(name string) Pointer
+
+var GetProcAddress GetProcAddressFunc 
 
 func Ptr(data interface{}) Pointer {
 	if data == nil {
@@ -41,7 +44,14 @@ func (p Pointer) Offset(o uintptr) Pointer {
 	return Pointer(uintptr(p) + uintptr(o))
 }
 
+func CopyString(dest []byte, str string) {
+	for i := 0; i < len(str); i++ {
+		dest[i] = str[i]
+	}
+	dest[len(str)] = 0
+}
 
+/*
 //Go bool to GL boolean.
 func GLBool(b bool) Boolean {
 	if b {
@@ -106,6 +116,4 @@ func GLStringArrayFree(strs []*Char) {
 func Offset(p Pointer, o uintptr) Pointer {
 	return Pointer(uintptr(p) + o)
 }
-`)
-}
-
+*/
