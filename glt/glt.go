@@ -8,7 +8,10 @@ import (
 	"fmt"
 )
 
+type Enum uint32
+type Bitfield uint32
 type Pointer uintptr
+
 type GetProcAddressFunc func(name string) Pointer
 
 var GetProcAddress GetProcAddressFunc 

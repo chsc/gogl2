@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 )
 
-func generateGoPackages(specsDir string, d *Documentation) {
-	ps, err := ParseSpecFile(filepath.Join(specsDir, openGLSpecFile))
+func generateGoPackages(specsDir string, f []Feature,  d *Documentation) {
+	ps, err := ParseSpecFile(filepath.Join(specsDir, openGLSpecFile), f)
 	if err != nil {
 		fmt.Println("Error while parsing OpenGL specification:", err)
 	}
@@ -21,7 +21,7 @@ func generateGoPackages(specsDir string, d *Documentation) {
 		fmt.Println("Error while generating OpenGL packages:", err)
 	}
 
-	ps, err = ParseSpecFile(filepath.Join(specsDir, wglSpecFile))
+	/*ps, err = ParseSpecFile(filepath.Join(specsDir, wglSpecFile))
 	if err != nil {
 		fmt.Println("Error while parsing WGL specification:", err)
 	}
@@ -46,7 +46,7 @@ func generateGoPackages(specsDir string, d *Documentation) {
 	err = ps.GeneratePackages(d)
 	if err != nil {
 		fmt.Println("Error while generating EGL packages:", err)
-	}
+	}*/
 }
 
 func downloadSpec(name string, args []string) {
@@ -88,14 +88,20 @@ func generatePackages(name string, args []string) {
 	fs := flag.NewFlagSet(name, flag.ExitOnError)
 	sdir := fs.String("sdir", "glspecs", "OpenGL spec directory.")
 	ddir := fs.String("ddir", "gldocs", "Documentation directory (currently not used).")
+	feat := fs.String("f", "", "Spec features and version seperated by '|'. e.g. : -f=gl:2.1|gles1:1.0")
 	fs.Parse(args)
-	fmt.Println("Generate Bindings ...")
 	df, err := ParseAllDocs(*ddir)
 	if err != nil {
 		fmt.Println("Error while parsing docs:", err)
 		return
 	}
-	generateGoPackages(*sdir, df)
+	f, err := ParseFeatureList(*feat)
+	if err != nil {
+		fmt.Println("Error while parsing feature arguments:", err)
+		return
+	}
+	fmt.Println("Generate Bindings ...")
+	generateGoPackages(*sdir, f, df)
 }
 
 func printUsage(name string) {

@@ -341,7 +341,7 @@ func removeCommands(ps Packages, ver Version, cmdNames []SpecCommandRef) {
 	}
 }
 
-func ParseSpecFile(file string) (Packages, error) {
+func ParseSpecFile(file string, fs Features) (Packages, error) {
 	pacs := make(Packages, 0)
 
 	reg, err := readSpecFile(file)
@@ -356,40 +356,18 @@ func ParseSpecFile(file string) (Packages, error) {
 	}
 
 	for _, ft := range reg.Features {
-		fmt.Println("---", ft.Api, ft.Name, ft.Number)
+		fmt.Println("Feature:", ft.Name, ft.Api, ft.Number)
 		version, err := ParseVersion(ft.Number)
 		if err != nil {
 			return nil, err
 		}
-		ptype := PackageTypeUnknown
-		pname := ""
-		switch ft.Api {
-		case "gl":
-			ptype = PackageTypeGL
-			pname = "gl"
-		case "gles1", "gles2":
-			ptype = PackageTypeGLES
-			pname = "gl"
-		case "wgl":
-			ptype = PackageTypeWGL
-			pname = "wgl"
-		case "glx":
-			ptype = PackageTypeGLX
-			pname = "glx"
-		case "egl":
-			ptype = PackageTypeEGL
-			pname = "egl"
-		default:
-			return nil, fmt.Errorf("Unknown api: '%s'", ft.Api)
+		if fs.HasFeature(ft.Api, version) {
+			p := &Package{Api: ft.Api, Name: ft.Api, Version: version, TypeDefs: tds, Enums: make(Enums), Functions: make(Functions)}
+			pacs = append(pacs, p)
 		}
-		p := &Package{PackageType: ptype, Name: pname, Version: version, TypeDefs: tds, Enums: make(Enums), Functions: make(Functions)}
-		pacs = append(pacs, p)
 	}
 
 	for _, f := range reg.Features {
-
-		//fmt.Println("Feature:", f.Api, f.Name, f.Number)
-
 		version, err := ParseVersion(f.Number)
 		if err != nil {
 			return nil, err
@@ -412,4 +390,49 @@ func ParseSpecFile(file string) (Packages, error) {
 	}
 
 	return pacs, nil
+}
+
+type Feature struct {
+	Name string
+	Versions []Version
+}
+
+type Features []Feature
+
+func ParseFeatureList(featureStr string) (Features, error) {
+	if len(featureStr) == 0 {
+		return nil, fmt.Errorf("feature string is empty")
+	}
+	features := make(Features, 0, 8)
+	featureStrs := strings.Split(featureStr, "|")
+	for _, f := range featureStrs {
+		featver := strings.SplitN(f, ":", 2)
+		if len(featver) != 2 {
+			return nil, fmt.Errorf("wrong format or version needed: '%s'", featureStr)
+		}
+		versions := make([]Version, 0, 8)
+		versionStrs := strings.Split(featver[1], ",")
+		for _, v := range versionStrs {
+			version, err := ParseVersion(v)
+			if err != nil {
+				return nil, err
+			}
+			versions = append(versions, version)
+		}
+		features = append(features, Feature{Name: featver[0], Versions: versions})
+	}
+	return features, nil
+}
+
+func (fs Features) HasFeature(name string, ver Version) bool {
+	for _, f := range fs {
+		if f.Name == name {
+			for _, v := range f.Versions {
+				if v.Compare(ver) == 0 {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }

@@ -12,21 +12,9 @@ import (
 	"strings"
 )
 
-const (
-	PackageTypeUnknown PackageType = iota
-	PackageTypeGL
-	PackageTypeGLExt
-	PackageTypeGLES
-	PackageTypeWGL
-	PackageTypeGLX
-	PackageTypeEGL
-)
-
-type PackageType int
-
 type Package struct {
-	PackageType PackageType
 	Name        string
+	Api         string
 	Version     Version
 	TypeDefs    []TypeDef
 	Enums       Enums
@@ -37,6 +25,9 @@ type Packages []*Package
 
 func (p *Package) writeHeader(w io.Writer) {
 	fmt.Fprintln(w, "// GoGL2 - automatically generated OpenGL binding: http://github.com/chsc/gogl2")
+	fmt.Fprintln(w, "//")
+	writeKhronosDocCopyright(w)
+	writeSgiDocCopyright(w)
 	fmt.Fprintf(w, "package %s\n\n", p.Name)
 }
 
@@ -60,47 +51,10 @@ func (p *Package) writeCTypes(w io.Writer) {
 	fmt.Fprintln(w, "// ")
 }
 
-func (p *Package) writeCGetProcAddressFunction(w io.Writer) {
-	fmt.Fprintln(w, "// #ifdef _WIN32")
-	fmt.Fprintln(w, "// static HMODULE opengl32 = NULL;")
-	fmt.Fprintln(w, "// #endif\n// ")
-	fmt.Fprintln(w, "// static void* goglGetProcAddress(const char* name) {")
-	fmt.Fprintln(w, "// #ifdef __APPLE__")
-	fmt.Fprintln(w, "// 	return dlsym(RTLD_DEFAULT, name);")
-	fmt.Fprintln(w, "// #elif _WIN32")
-	fmt.Fprintln(w, "// 	void* pf = wglGetProcAddress((LPCSTR)name);")
-	fmt.Fprintln(w, "// 	if(pf) {")
-	fmt.Fprintln(w, "// 		return pf;")
-	fmt.Fprintln(w, "// 	}")
-	fmt.Fprintln(w, "// 	if(opengl32 == NULL) {")
-	fmt.Fprintln(w, "// 		opengl32 = LoadLibraryA(\"opengl32.dll\");")
-	fmt.Fprintln(w, "// 	}")
-	fmt.Fprintln(w, "// 	return GetProcAddress(opengl32, (LPCSTR)name);")
-	fmt.Fprintln(w, "// #else")
-	fmt.Fprintln(w, "// 	return glXGetProcAddress((const GLubyte*)name);")
-	fmt.Fprintln(w, "// #endif")
-	fmt.Fprintln(w, "// }")
-	fmt.Fprintln(w, "//")
-}
-
 func (p *Package) writeCgoFlags(w io.Writer) {
 	fmt.Fprintln(w, "// #cgo darwin  LDFLAGS: -framework OpenGL")
 	fmt.Fprintln(w, "// #cgo linux   LDFLAGS: -lGL")
 	fmt.Fprintln(w, "// #cgo windows LDFLAGS: -lopengl32")
-	fmt.Fprintln(w, "//")
-}
-
-func (p *Package) writeCIncludes(w io.Writer) {
-	fmt.Fprintln(w, "// #include <stdlib.h>")
-	fmt.Fprintln(w, "// #if defined(__APPLE__)")
-	fmt.Fprintln(w, "// #include <dlfcn.h>")
-	fmt.Fprintln(w, "// #elif defined(_WIN32)")
-	fmt.Fprintln(w, "// #define WIN32_LEAN_AND_MEAN 1")
-	fmt.Fprintln(w, "// #include <windows.h>")
-	fmt.Fprintln(w, "// #else")
-	fmt.Fprintln(w, "// #include <X11/Xlib.h>")
-	//fmt.Fprintln(w, "// #include <GL/glx.h>")
-	fmt.Fprintln(w, "// #endif")
 	fmt.Fprintln(w, "//")
 }
 
@@ -140,22 +94,20 @@ func (p *Package) writeCommands(dir string, useFuncPtrs bool, d *Documentation) 
 
 	p.writeHeader(w)
 	p.writeCgoFlags(w)
-	p.writeCIncludes(w)
 	p.writeAPIDefinitions(w)
 	p.writeCTypes(w)
 	if useFuncPtrs {
-		p.writeCGetProcAddressFunction(w)
-		sf.WriteCFunctionPtrs(w)
+		sf.WriteCFunctionPtrTypedefs(w)
 		sf.WriteCBridgeDefinitions(w)
 	} else {
 		sf.WriteCDeclarations(w)
 	}
-	if useFuncPtrs {
-		sf.WriteCInitProcAddresses(w)
-	}
 	fmt.Fprintln(w, "import \"C\"")
 	fmt.Fprintln(w, "import \"errors\"")
+	fmt.Fprintln(w, "import \"github.com/chsc/gogl2/glt\"")
+	fmt.Fprintln(w, "import \"unsafe\"")
 	fmt.Fprintln(w, "")
+	sf.WriteGoFunctionPtrs(w)
 	sf.WriteGoDefinitions(w, useFuncPtrs, d, p.Version.Major)
 	sf.WriteGoInitPackage(w)
 	p.writeFooter(w)
@@ -167,24 +119,7 @@ func (p *Package) GeneratePackage(d *Documentation) error {
 	fmt.Println("Generating package", p.Name, p.Version)
 	dir := ""
 	usePtr := true
-	switch p.PackageType {
-	case PackageTypeGL:
-		dir = filepath.Join("gl", p.Version.String(), p.Name)
-	case PackageTypeGLExt:
-		dir = filepath.Join("gl", p.Name)
-	case PackageTypeGLES:
-		dir = filepath.Join("gles", p.Version.String(), p.Name)
-	case PackageTypeGLX:
-		dir = filepath.Join("glx", p.Version.String(), p.Name)
-		usePtr = false
-	case PackageTypeWGL:
-		dir = filepath.Join("wgl", p.Version.String(), p.Name)
-		usePtr = false
-	case PackageTypeEGL:
-		dir = filepath.Join("egl", p.Version.String(), p.Name)
-	default:
-		return fmt.Errorf("Unknown package type %v", p.PackageType)
-	}
+	dir = filepath.Join(p.Api, p.Version.String(), p.Name)
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
 		return err
