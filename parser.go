@@ -274,29 +274,37 @@ func findEnum(enumName string, est []SpecEnumToken) (string, string) {
 	return "", ""
 }
 
-func addEnums(ps []*Package, ver Version, enumNames []SpecEnumRef, et []SpecEnumToken) {
+func addEnums(ps Packages, api string, ver Version, enumNames []SpecEnumRef, et []SpecEnumToken) {
+	fmt.Println("Adding enums from version", api, ver , "to")
 	for _, pc := range ps {
+		if pc.Api != api {
+			continue
+		}
 		if pc.Version.Compare(ver) < 0 {
 			continue
 		}
-		//fmt.Println("adding enums to package", pc.Name, ver)
+		fmt.Println(" package", pc.Api, pc.Version)
 		for _, en := range enumNames {
 			val, grp := findEnum(en.Name, et)
 			if val == "" {
 				fmt.Println("Not found:", en.Name)
 			}
 			//fmt.Println("adding", en)
-			pc.Enums[en.Name] = &Enum{Name: strings.TrimPrefix(en.Name, "GL_"), Value: val, Group: grp}
+			pc.Enums[en.Name] = &Enum{Name: TrimGLEnumPrefix(en.Name), Value: val, Group: grp}
 		}
 	}
 }
 
-func removeEnums(ps Packages, ver Version, enumNames []SpecEnumRef) {
+func removeEnums(ps Packages, api string, ver Version, enumNames []SpecEnumRef) {
+	fmt.Println("Removing enums from version", api, ver, "to")
 	for _, pc := range ps {
+		if pc.Api != api {
+			continue
+		}
 		if pc.Version.Compare(ver) < 0 {
 			continue
 		}
-		//fmt.Println("removing enums from package", pc.Name, ver)
+		fmt.Println(" package", pc.Api, pc.Version)
 		for _, en := range enumNames {
 			if _, ok := pc.Enums[en.Name]; ok {
 				delete(pc.Enums, en.Name)
@@ -305,14 +313,18 @@ func removeEnums(ps Packages, ver Version, enumNames []SpecEnumRef) {
 	}
 }
 
-func addCommands(ps Packages, ver Version, cmdNames []SpecCommandRef, functions Functions) {
+func addCommands(ps Packages, api string, ver Version, cmdNames []SpecCommandRef, functions Functions) {
+	//fmt.Println("Adding commands from version", api, ver , "to")
 	for _, pc := range ps {
+		if pc.Api != api {
+			continue
+		}
 		if pc.Version.Compare(ver) < 0 {
 			continue
 		}
-		//fmt.Println("adding enums to package", pc.Name, ver)
+		//fmt.Println(" package", pc.Api, pc.Version)
 		for _, cn := range cmdNames {
-			fname := strings.TrimPrefix(cn.Name, "gl")
+			fname := TrimGLCmdPrefix(cn.Name)
 			f, ok := functions[fname]
 			if !ok {
 				fmt.Println("add cmd: Cmd not found:", fname)
@@ -324,14 +336,18 @@ func addCommands(ps Packages, ver Version, cmdNames []SpecCommandRef, functions 
 	}
 }
 
-func removeCommands(ps Packages, ver Version, cmdNames []SpecCommandRef) {
+func removeCommands(ps Packages, api string, ver Version, cmdNames []SpecCommandRef) {
+	//fmt.Println("Removing commands from version", api, ver, "to")
 	for _, pc := range ps {
+		if pc.Api != api {
+			continue
+		}
 		if pc.Version.Compare(ver) < 0 {
 			continue
 		}
-		//fmt.Println("removing cmds from package", pc.Name, ver)
+		//fmt.Println(" package", pc.Api, pc.Version)
 		for _, cn := range cmdNames {
-			fname := strings.TrimPrefix(cn.Name, "gl")
+			fname := TrimGLCmdPrefix(cn.Name)
 			if _, ok := pc.Functions[fname]; !ok {
 				fmt.Println("Remove cmd: Cmd not found", fname)
 			} else {
@@ -362,6 +378,7 @@ func ParseSpecFile(file string, fs Features) (Packages, error) {
 			return nil, err
 		}
 		if fs.HasFeature(ft.Api, version) {
+			fmt.Println("Adding", ft.Name, ft.Api, ft.Number)
 			p := &Package{Api: ft.Api, Name: ft.Api, Version: version, TypeDefs: tds, Enums: make(Enums), Functions: make(Functions)}
 			pacs = append(pacs, p)
 		}
@@ -372,21 +389,18 @@ func ParseSpecFile(file string, fs Features) (Packages, error) {
 		if err != nil {
 			return nil, err
 		}
-
 		for _, r := range f.Requires {
-			addEnums(pacs, version, r.Enums, reg.Enums)
+			addEnums(pacs, f.Api, version, r.Enums, reg.Enums)
 		}
 		for _, d := range f.Removes {
-			removeEnums(pacs, version, d.Enums)
+			removeEnums(pacs, f.Api, version, d.Enums)
 		}
-
 		for _, r := range f.Requires {
-			addCommands(pacs, version, r.Commands, functions)
+			addCommands(pacs, f.Api, version, r.Commands, functions)
 		}
 		for _, d := range f.Removes {
-			removeCommands(pacs, version, d.Commands)
+			removeCommands(pacs, f.Api, version, d.Commands)
 		}
-
 	}
 
 	return pacs, nil

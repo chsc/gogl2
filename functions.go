@@ -98,7 +98,7 @@ func (f *Function) WriteGoFunctionPtr(w io.Writer) {
 }
 
 func (f *Function) WriteGoGetProcAddress(w io.Writer) {
-	fmt.Fprintf(w, "	if pgl%s = glt.GetProcAddress(\"gl%s\"); pgl%s == nil { return errors.New(\"gl%s\") }\n", f.Name, f.Name, f.Name, f.Name)
+	fmt.Fprintf(w, "	if pgl%s = (C.PGL%s)(unsafe.Pointer(glt.GetProcAddress(\"gl%s\"))); pgl%s == nil { return errors.New(\"gl%s\") }\n", f.Name, strings.ToUpper(f.Name), f.Name, f.Name, f.Name)
 }
 
 func (f *Function) WriteGoDefinition(w io.Writer, usePtr bool, d *Documentation, majorVersion int) {
@@ -129,7 +129,10 @@ func (f *Function) WriteGoDefinition(w io.Writer, usePtr bool, d *Documentation,
 		tconv := f.Return.GoConversion()
 		fmt.Fprintf(w, ") %s {\n", ctype)
 		if usePtr {
-			fmt.Fprintf(w, "\treturn %s(C.gogl%s(", tconv, f.Name)
+			fmt.Fprintf(w, "\treturn %s(C.gogl%s(pgl%s", tconv, f.Name, f.Name)
+			if len(f.Parameters) != 0 {
+				fmt.Fprintf(w, ", ")
+			}
 		} else {
 			fmt.Fprintf(w, "\treturn %s(C.gl%s(", tconv, f.Name)
 		}

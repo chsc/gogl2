@@ -71,6 +71,23 @@ func (p *Package) writeAPIDefinitions(w io.Writer) {
 	fmt.Fprintln(w, "//")
 }
 
+func (p *Package) writeConvFunctions(w io.Writer) {
+	fmt.Fprintln(w, "func GLBoolean(b C.GLboolean) bool {")
+	fmt.Fprintln(w, "	return b == TRUE")
+	fmt.Fprintln(w, "}")
+	fmt.Fprintln(w, "func GoBoolean(b bool) C.GLboolean {")
+	fmt.Fprintln(w, "	if b { return TRUE }")
+	fmt.Fprintln(w, "	return FALSE")
+	fmt.Fprintln(w, "}")
+	fmt.Fprintln(w, "func cgoPtr1(p *glt.Pointer) *unsafe.Pointer {")
+	fmt.Fprintln(w, " return (*unsafe.Pointer)(unsafe.Pointer(p))")
+	fmt.Fprintln(w, "}")
+	fmt.Fprintln(w, "func cgoChar2(p **int8) **C.GLchar {")
+	fmt.Fprintln(w, " return (**C.GLchar)(unsafe.Pointer(p))")
+	fmt.Fprintln(w, "}")
+
+}
+
 func (p *Package) writeEnums(dir string) error {
 	w, err := os.Create(filepath.Join(dir, "enums.go"))
 	if err != nil {
@@ -108,6 +125,7 @@ func (p *Package) writeCommands(dir string, useFuncPtrs bool, d *Documentation) 
 	fmt.Fprintln(w, "import \"unsafe\"")
 	fmt.Fprintln(w, "")
 	sf.WriteGoFunctionPtrs(w)
+	p.writeConvFunctions(w)
 	sf.WriteGoDefinitions(w, useFuncPtrs, d, p.Version.Major)
 	sf.WriteGoInitPackage(w)
 	p.writeFooter(w)

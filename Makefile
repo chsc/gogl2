@@ -4,6 +4,11 @@ bindings:
 	make generate_bindings
 	make install_bindings
 
+bindings2:
+	go build
+	make generate_bindings
+	make install_bindings
+
 pull_all:
 	./gogl2 pulldoc -ver=2
 	./gogl2 pulldoc -ver=3
@@ -11,7 +16,7 @@ pull_all:
 	./gogl2 pullspec
 
 generate_bindings:
-	./gogl2 generate -f=gl:1.0,2.1
+	./gogl2 generate -f=gl:1.1,2.1
 
 install_bindings:
 	go install ./gl/2.1/gl

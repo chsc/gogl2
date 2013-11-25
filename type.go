@@ -78,7 +78,7 @@ func (t Type) GoType() string {
 	case "GLclampx":
 		return t.ptrStr() + "int32"
 	case "GLsizei":
-		return t.ptrStr() + "uint32"
+		return t.ptrStr() + "int32"
 	case "GLbyte":
 		return t.ptrStr() + "int8"
 	case "GLfixed":
@@ -118,19 +118,31 @@ func (t Type) GoType() string {
 		return t.ptrStr() + "glt.Pointer"
 	case "GLsync":
 		return t.ptrStr() + "glt.Pointer"
+	case "void **":
+		return "*glt.Pointer"
+	case "const void *const*":
+		return "*glt.Pointer"
 	}
-	return "<type:"+t.Name+">"
+	return "<unknown type:"+t.Name+">"
 }
 
 func (t Type) CgoConversion() string {
 	switch t.Name {
 	case "GLboolean":
 		if t.PointerLevel == 0 {
-			return "glt.GLBool"
+			return "GoBoolean"
 		}
 	case "void", "GLvoid":
 		if t.PointerLevel > 0 {
 			return "unsafe.Pointer"
+		}
+	case "void **":
+		return "cgoPtr1"
+	case "const void *const*":
+		return "cgoPtr1"
+	case "GLchar":
+		if t.PointerLevel == 2 {
+			return "cgoChar2"
 		}
 /*	case "GLintptr", "GLintptrARB":
 		if t.PointerLevel == 0 {
@@ -148,7 +160,7 @@ func (t Type) GoConversion() string {
 	switch t.Name {
 	case "GLboolean":
 		if t.PointerLevel == 0 {
-			return "glt.GLBoolean"
+			return "GLBoolean"
 		}
 	case "void", "GLvoid":
 		if t.PointerLevel > 0 {
@@ -158,10 +170,22 @@ func (t Type) GoConversion() string {
 		if t.PointerLevel == 0 {
 			return "int"
 		}
+	case "GLuint", "GLuintARB":
+		if t.PointerLevel == 0 {
+			return "uint32"
+		}
+	case "GLenum":
+		if t.PointerLevel == 0 {
+			return "glt.Enum"
+		}
+	case "GLubyte":
+		return "(" + t.ptrStr() + "byte)"
+	case "GLint":
+		return t.ptrStr() + "int32"
 	case "GLsizeiptrARB", "GLsizeiptr":
 		if t.PointerLevel == 0 {
 			return "int"
 		}
 	}
-	return fmt.Sprintf("(%sC.%s)", t.ptrStr(), t.Name)
+	return fmt.Sprintf("<unknown type:%sC.%s>", t.ptrStr(), t.Name)
 }
