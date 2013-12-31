@@ -22,7 +22,9 @@ import "unsafe"
 import "github.com/chsc/gogl2/glt"
 
 func GetProcAddress(name string) glt.Pointer {
-	return glt.Pointer(unsafe.Pointer(C.GoglGetProcAddress(C.CString(name))))
+	var cname *C.char = C.CString(name)
+	defer C.free(unsafe.Pointer(cname))
+	return glt.Pointer(unsafe.Pointer(C.GoglGetProcAddress(cname)))
 }
 
 func init() {
