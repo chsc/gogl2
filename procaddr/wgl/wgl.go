@@ -7,7 +7,7 @@ package wgl
 // #define WIN32_LEAN_AND_MEAN 1
 // #include <windows.h>
 // static HMODULE ogl32dll = NULL;
-// void* GetProcAddress(const char* name) { 
+// void* GoglGetProcAddress(const char* name) { 
 // 	void* pf = wglGetProcAddress((LPCSTR)name);
 // 	if(pf) {
 // 		return pf;
@@ -22,9 +22,9 @@ import "unsafe"
 import "github.com/chsc/gogl2/glt"
 
 func GetProcAddress(name string) glt.Pointer {
-	var n [64]byte
-	glt.CopyString(n[:], name)
-	return glt.Pointer(unsafe.Pointer(C.GetProcAddress((*C.char)(&n[0]))))
+	var cname *C.char = C.CString(name)
+	defer C.free(unsafe.Pointer(cname))
+	return glt.Pointer(unsafe.Pointer(C.GoglGetProcAddress(cname)))
 }
 
 func init() {
