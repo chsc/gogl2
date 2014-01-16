@@ -98,7 +98,7 @@ func (f *Function) WriteGoFunctionPtr(w io.Writer) {
 }
 
 func (f *Function) WriteGoGetProcAddress(w io.Writer) {
-	fmt.Fprintf(w, "	if pgl%s = (C.PGL%s)(unsafe.Pointer(glt.GetProcAddress(\"gl%s\"))); pgl%s == nil { return errors.New(\"gl%s\") }\n", f.Name, strings.ToUpper(f.Name), f.Name, f.Name, f.Name)
+	fmt.Fprintf(w, "	if pgl%s = (C.PGL%s)(unsafe.Pointer(procaddr.GetProcAddress(\"gl%s\"))); pgl%s == nil { return errors.New(\"gl%s\") }\n", f.Name, strings.ToUpper(f.Name), f.Name, f.Name, f.Name)
 }
 
 func (f *Function) WriteGoDefinition(w io.Writer, usePtr bool, d *Documentation, majorVersion int) {
@@ -213,4 +213,3 @@ func (sf SortedFunctions) WriteGoDefinitions(w io.Writer, usePtr bool, d *Docume
 	}
 	fmt.Fprintln(w, "")
 }
-
