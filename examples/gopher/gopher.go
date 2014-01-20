@@ -7,12 +7,12 @@ import (
 	"github.com/chsc/gogl2/gl/2.1/gl"
 	"github.com/chsc/gogl2/glt"
 	_ "github.com/chsc/gogl2/procaddr/glx"
-	//"github.com/chsc/gogl2/util/gltex"
-	"github.com/jteeuwen/glfw"
+	glfw "github.com/go-gl/glfw3"
 	"image"
 	"image/png"
 	"io"
 	"os"
+	"runtime"
 )
 
 const (
@@ -29,26 +29,29 @@ var (
 	lightpos   []float32 = []float32{-5, 5, 10, 0}
 )
 
+func init() {
+	// GLFW event handling must run on the main OS thread
+	runtime.LockOSThread()
+}
+
 func main() {
-	if err := glfw.Init(); err != nil {
-		fmt.Fprintf(os.Stderr, "glfw: %s\n", err)
+	if !glfw.Init() {
+		fmt.Fprintf(os.Stderr, "glfw: failed initialisation\n")
 		return
 	}
 	defer glfw.Terminate()
 
-	glfw.OpenWindowHint(glfw.WindowNoResize, 1)
-
-	if err := glfw.OpenWindow(Width, Height, 0, 0, 0, 0, 16, 0, glfw.Windowed); err != nil {
+	glfw.WindowHint(glfw.Resizable, 0)
+	window, err := glfw.CreateWindow(Width, Height, Title, nil, nil)
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "glfw: %s\n", err)
 		return
 	}
-	defer glfw.CloseWindow()
-
-	glfw.SetSwapInterval(1)
-	glfw.SetWindowTitle(Title)
+	window.MakeContextCurrent()
 
 	if err := gl.Init(); err != nil {
 		fmt.Fprintf(os.Stderr, "gl: %s\n", err)
+		return
 	}
 
 	if err := initScene(); err != nil {
@@ -57,9 +60,10 @@ func main() {
 	}
 	defer destroyScene()
 
-	for glfw.WindowParam(glfw.Opened) == 1 {
+	for !window.ShouldClose() {
 		drawScene()
-		glfw.SwapBuffers()
+		window.SwapBuffers()
+		glfw.PollEvents()
 	}
 }
 

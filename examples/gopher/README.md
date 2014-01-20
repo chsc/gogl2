@@ -1,7 +1,7 @@
 Spinning Gopher
 ===============
 
-Simple test program for GoGL.
+Simple test program for GoGL2.
 
 ### Linux ###
 
@@ -10,3 +10,7 @@ Simple test program for GoGL.
 ### Windows ###
 
 ![gopherwindows](https://github.com/chsc/gogl/raw/master/examples/gopher/gopher_windows.png)
+
+### OS X ###
+
+![gopherosx](https://github.com/chsc/gogl/raw/master/examples/gopher/gopher_osx.png)
